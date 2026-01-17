@@ -1,0 +1,1324 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>iTabs Generator</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #f59e0b;
+            --primary-dark: #d97706;
+            --accent: #10b981;
+            --bg-dark: #0f172a;
+            --bg-card: #1e293b;
+            --bg-input: #0f172a;
+            --bg-hover: #334155;
+            --text-primary: #f1f5f9;
+            --text-secondary: #94a3b8;
+            --text-muted: #64748b;
+            --border: #334155;
+            --error: #ef4444;
+            --success: #10b981;
+        }
+        
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        
+        body {
+            font-family: 'Inter', sans-serif;
+            background: var(--bg-dark);
+            color: var(--text-primary);
+            min-height: 100vh;
+            line-height: 1.6;
+        }
+        
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        header {
+            text-align: center;
+            padding: 30px 20px;
+            border-bottom: 1px solid var(--border);
+            margin-bottom: 25px;
+        }
+        
+        .logo {
+            font-size: 1.8rem;
+            font-weight: 700;
+            margin-bottom: 8px;
+        }
+        
+        .logo span {
+            background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        
+        .tagline {
+            color: var(--text-secondary);
+            font-size: 1rem;
+        }
+        
+        /* Steps indicator */
+        .steps-indicator {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+            padding: 0 10px;
+        }
+        
+        .step-dot {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            background: var(--bg-card);
+            border: 2px solid var(--border);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 600;
+            font-size: 0.85rem;
+            color: var(--text-muted);
+            flex-shrink: 0;
+        }
+        
+        .step-dot.active {
+            background: var(--primary);
+            border-color: var(--primary);
+            color: var(--bg-dark);
+        }
+        
+        .step-dot.completed {
+            background: var(--success);
+            border-color: var(--success);
+            color: white;
+        }
+        
+        .step-line {
+            flex: 1;
+            height: 2px;
+            background: var(--border);
+            margin: 0 8px;
+        }
+        
+        .step-line.completed {
+            background: var(--success);
+        }
+        
+        /* Sections */
+        .section {
+            display: none;
+        }
+        
+        .section.active {
+            display: block;
+        }
+        
+        .section-title {
+            font-size: 1.3rem;
+            font-weight: 700;
+            margin-bottom: 8px;
+            color: var(--primary);
+        }
+        
+        .section-desc {
+            color: var(--text-secondary);
+            margin-bottom: 20px;
+            font-size: 0.95rem;
+        }
+        
+        /* Cards */
+        .card {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+        
+        .card-title {
+            font-size: 1rem;
+            font-weight: 600;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        /* Form elements */
+        label {
+            display: block;
+            color: var(--text-secondary);
+            font-size: 0.85rem;
+            margin-bottom: 6px;
+            font-weight: 500;
+        }
+        
+        input[type="text"],
+        input[type="url"],
+        input[type="email"],
+        input[type="password"],
+        textarea {
+            width: 100%;
+            background: var(--bg-input);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 12px 14px;
+            color: var(--text-primary);
+            font-family: 'Inter', sans-serif;
+            font-size: 1rem;
+        }
+        
+        input:focus,
+        textarea:focus {
+            outline: none;
+            border-color: var(--primary);
+        }
+        
+        textarea {
+            min-height: 150px;
+            resize: vertical;
+        }
+        
+        .input-help {
+            color: var(--text-muted);
+            font-size: 0.8rem;
+            margin-top: 8px;
+        }
+        
+        .input-help a {
+            color: var(--primary);
+            text-decoration: none;
+        }
+        
+        /* Checkbox */
+        .checkbox-row {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-top: 15px;
+            padding: 12px;
+            background: var(--bg-input);
+            border-radius: 8px;
+            cursor: pointer;
+        }
+        
+        .checkbox-row input {
+            width: 20px;
+            height: 20px;
+            accent-color: var(--primary);
+        }
+        
+        .checkbox-row span {
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+        }
+        
+        /* Buttons */
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            padding: 14px 24px;
+            border-radius: 8px;
+            font-family: 'Inter', sans-serif;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            border: none;
+            width: 100%;
+            transition: opacity 0.2s;
+        }
+        
+        .btn:hover {
+            opacity: 0.9;
+        }
+        
+        .btn-primary {
+            background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+            color: var(--bg-dark);
+        }
+        
+        .btn-secondary {
+            background: var(--bg-hover);
+            color: var(--text-primary);
+            border: 1px solid var(--border);
+        }
+        
+        .btn-success {
+            background: var(--success);
+            color: white;
+        }
+        
+        .btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+        
+        .btn-row {
+            display: flex;
+            gap: 12px;
+            margin-top: 20px;
+        }
+        
+        .btn-row .btn {
+            flex: 1;
+        }
+        
+        /* API Key toggle */
+        .api-key-wrap {
+            position: relative;
+        }
+        
+        .api-key-wrap input {
+            padding-right: 50px;
+        }
+        
+        .api-key-toggle {
+            position: absolute;
+            right: 12px;
+            top: 50%;
+            transform: translateY(-50%);
+            background: none;
+            border: none;
+            color: var(--text-muted);
+            cursor: pointer;
+            font-size: 1.1rem;
+        }
+        
+        /* Editor sections */
+        .edit-section {
+            background: var(--bg-input);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            margin-bottom: 12px;
+            overflow: hidden;
+        }
+        
+        .edit-section-head {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 12px 15px;
+            background: var(--bg-card);
+            cursor: pointer;
+        }
+        
+        .edit-section-head h4 {
+            font-size: 0.95rem;
+            font-weight: 600;
+        }
+        
+        .edit-section-body {
+            display: none;
+            padding: 15px;
+        }
+        
+        .edit-section-body.show {
+            display: block;
+        }
+        
+        .edit-field {
+            margin-bottom: 12px;
+        }
+        
+        .edit-field:last-child {
+            margin-bottom: 0;
+        }
+        
+        /* Timestamp badge */
+        .timestamp-badge {
+            display: inline-block;
+            background: var(--bg-hover);
+            color: var(--primary);
+            font-size: 0.75rem;
+            padding: 2px 8px;
+            border-radius: 4px;
+            margin-left: 8px;
+            font-family: monospace;
+        }
+        
+        /* Color picker */
+        .color-row {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        
+        .color-picker {
+            width: 50px;
+            height: 38px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            background: none;
+        }
+        
+        .color-preview {
+            width: 38px;
+            height: 38px;
+            border-radius: 6px;
+            border: 2px solid var(--border);
+        }
+        
+        /* Loading */
+        .loading {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(15, 23, 42, 0.95);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+            flex-direction: column;
+            gap: 15px;
+        }
+        
+        .loading.show {
+            display: flex;
+        }
+        
+        .spinner {
+            width: 40px;
+            height: 40px;
+            border: 3px solid var(--border);
+            border-top-color: var(--primary);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+        
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+        
+        .loading-text {
+            color: var(--text-secondary);
+            text-align: center;
+            max-width: 280px;
+        }
+        
+        /* Progress steps in loading */
+        .loading-steps {
+            margin-top: 20px;
+            text-align: left;
+        }
+        
+        .loading-step {
+            color: var(--text-muted);
+            font-size: 0.85rem;
+            padding: 4px 0;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .loading-step.done {
+            color: var(--success);
+        }
+        
+        .loading-step.active {
+            color: var(--primary);
+        }
+        
+        /* Footer */
+        footer {
+            text-align: center;
+            padding: 25px 20px;
+            border-top: 1px solid var(--border);
+            margin-top: 30px;
+            color: var(--text-muted);
+            font-size: 0.85rem;
+        }
+        
+        footer a {
+            color: var(--primary);
+            text-decoration: none;
+        }
+        
+        /* Error message */
+        .error-msg {
+            background: rgba(239, 68, 68, 0.1);
+            border: 1px solid var(--error);
+            color: var(--error);
+            padding: 12px;
+            border-radius: 8px;
+            margin-bottom: 15px;
+            font-size: 0.9rem;
+        }
+        
+        /* Success message */
+        .success-msg {
+            background: rgba(16, 185, 129, 0.1);
+            border: 1px solid var(--success);
+            color: var(--success);
+            padding: 12px;
+            border-radius: 8px;
+            margin-bottom: 15px;
+            font-size: 0.9rem;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <div class="logo"><span>i</span>Tabs</div>
+            <p class="tagline">People learn easier and act</p>
+        </header>
+        
+        <div class="steps-indicator">
+            <div class="step-dot active" id="dot1">1</div>
+            <div class="step-line" id="line1"></div>
+            <div class="step-dot" id="dot2">2</div>
+            <div class="step-line" id="line2"></div>
+            <div class="step-dot" id="dot3">3</div>
+        </div>
+        
+        <!-- Step 1: API Key -->
+        <div class="section active" id="step1">
+            <h2 class="section-title">Setup</h2>
+            <p class="section-desc">One-time setup. Your key stays in your browser.</p>
+            
+            <div class="card">
+                <div class="card-title">🔑 Gemini API Key</div>
+                
+                <div class="api-key-wrap">
+                    <input type="password" id="apiKey" placeholder="Paste your API key">
+                    <button class="api-key-toggle" onclick="toggleKey()">👁️</button>
+                </div>
+                <p class="input-help">
+                    Free from Google → <a href="https://aistudio.google.com/app/apikey" target="_blank">Get your key</a>
+                </p>
+                
+                <div class="btn-row">
+                    <button class="btn btn-primary" onclick="saveKeyAndContinue()">Save & Continue →</button>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Step 2: Content Input -->
+        <div class="section" id="step2">
+            <h2 class="section-title">Your Content</h2>
+            <p class="section-desc">Paste your source. AI will organise it into an iTabs guide.</p>
+            
+            <div class="card">
+                <div class="card-title">🎬 YouTube Video (optional)</div>
+                
+                <input type="url" id="youtubeUrl" placeholder="https://youtube.com/watch?v=..." value="https://www.youtube.com/watch?v=8_wzjlWBcM4">
+                <p class="input-help">Paste the video URL to embed it in your guide</p>
+                
+                <label class="checkbox-row">
+                    <input type="checkbox" id="embedVideo" checked>
+                    <span>Embed video at top of guide</span>
+                </label>
+            </div>
+            
+            <div class="card">
+                <div class="card-title">📝 Transcript / Content</div>
+                
+                <textarea id="rawContent" placeholder="Paste your transcript here...">[00:00:00] Welcome to this guide on getting started.
+[00:00:15] The first thing you need to know is the basics.
+[00:01:30] Here's the key concept that changes everything.
+[00:03:45] Now let's walk through the steps.
+[00:05:00] Finally, here's what to do next.</textarea>
+                
+                <p class="input-help">Tip: Timestamps like [00:01:23] will link to video moments</p>
+            </div>
+            
+            <div class="card">
+                <div class="card-title">🎯 Quick Context</div>
+                
+                <div class="edit-field">
+                    <label>Who is this guide for?</label>
+                    <input type="text" id="audience" placeholder="e.g. Training clients, Students, My own reference" value="People new to this topic">
+                </div>
+                
+                <div class="edit-field">
+                    <label>What should they be able to DO after reading?</label>
+                    <input type="text" id="goal" placeholder="e.g. Set up Claude Code, Pass their RSA exam" value="Understand the basics and take action">
+                </div>
+            </div>
+            
+            <div class="btn-row">
+                <button class="btn btn-secondary" onclick="goBack()">← Back</button>
+                <button class="btn btn-primary" onclick="processContent()">Create iTabs →</button>
+            </div>
+        </div>
+        
+        <!-- Step 3: Editor & Download -->
+        <div class="section" id="step3">
+            <h2 class="section-title">Edit & Download</h2>
+            <p class="section-desc">Review, tweak, then download your iTabs guide.</p>
+            
+            <div id="errorMsg"></div>
+            
+            <div class="card">
+                <div class="card-title">🏷️ Branding</div>
+                
+                <div class="edit-field">
+                    <label>Guide Title</label>
+                    <input type="text" id="brandName" placeholder="My Guide">
+                </div>
+                
+                <div class="edit-field">
+                    <label>Prepared For (optional)</label>
+                    <input type="text" id="clientName" placeholder="Client or company name">
+                </div>
+                
+                <div class="edit-field">
+                    <label>Brand Color</label>
+                    <div class="color-row">
+                        <input type="color" class="color-picker" id="brandColor" value="#f59e0b">
+                        <div class="color-preview" id="colorPrev" style="background:#f59e0b;"></div>
+                    </div>
+                </div>
+                
+                <div class="edit-field">
+                    <label>Contact Email (optional)</label>
+                    <input type="email" id="contactEmail" placeholder="hello@example.com">
+                </div>
+            </div>
+            
+            <div id="sectionsWrap"></div>
+            
+            <button class="btn btn-secondary" onclick="addSection()" style="margin-bottom:20px;">+ Add Section</button>
+            
+            <div class="btn-row">
+                <button class="btn btn-secondary" onclick="goBack()">← Back</button>
+                <button class="btn btn-success" onclick="download()">⬇️ Download iTabs</button>
+            </div>
+        </div>
+        
+        <footer>
+            Built by <a href="https://itabs.ai">iTabs</a> • People learn easier and act
+        </footer>
+    </div>
+    
+    <div class="loading" id="loading">
+        <div class="spinner"></div>
+        <div class="loading-text" id="loadingTxt">Processing your content...</div>
+        <div class="loading-steps" id="loadingSteps"></div>
+    </div>
+    
+    <script>
+        // State
+        let step = 1;
+        let apiKey = '';
+        let sections = [];
+        let youtubeVideoId = '';
+        
+        // Check for saved API key on load
+        window.onload = function() {
+            const savedKey = localStorage.getItem('itabs_gemini_key');
+            if (savedKey) {
+                apiKey = savedKey;
+                document.getElementById('apiKey').value = savedKey;
+            }
+        };
+        
+        // Navigation
+        function goToStep(n) {
+            step = n;
+            updateUI();
+        }
+        
+        function goBack() {
+            step--;
+            updateUI();
+        }
+        
+        function updateUI() {
+            document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+            document.getElementById('step' + step).classList.add('active');
+            
+            for (let i = 1; i <= 3; i++) {
+                const dot = document.getElementById('dot' + i);
+                const line = document.getElementById('line' + (i-1));
+                
+                if (i < step) {
+                    dot.className = 'step-dot completed';
+                    dot.textContent = '✓';
+                    if (line) line.classList.add('completed');
+                } else if (i === step) {
+                    dot.className = 'step-dot active';
+                    dot.textContent = i;
+                } else {
+                    dot.className = 'step-dot';
+                    dot.textContent = i;
+                }
+            }
+        }
+        
+        // API Key
+        function toggleKey() {
+            const inp = document.getElementById('apiKey');
+            inp.type = inp.type === 'password' ? 'text' : 'password';
+        }
+        
+        function saveKeyAndContinue() {
+            apiKey = document.getElementById('apiKey').value.trim();
+            if (!apiKey) {
+                alert('Please enter your Gemini API key');
+                return;
+            }
+            localStorage.setItem('itabs_gemini_key', apiKey);
+            step = 2;
+            updateUI();
+        }
+        
+        // Extract YouTube video ID
+        function extractVideoId(url) {
+            if (!url) return '';
+            const patterns = [
+                /(?:youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/embed\/)([^&\s?]+)/,
+                /^([a-zA-Z0-9_-]{11})$/
+            ];
+            for (const pattern of patterns) {
+                const match = url.match(pattern);
+                if (match) return match[1];
+            }
+            return '';
+        }
+        
+        // Process content with Gemini
+        async function processContent() {
+            const rawContent = document.getElementById('rawContent').value.trim();
+            const youtubeUrl = document.getElementById('youtubeUrl').value.trim();
+            const audience = document.getElementById('audience').value.trim() || 'General learners';
+            const goal = document.getElementById('goal').value.trim() || 'Understand and apply the content';
+            
+            if (!rawContent) {
+                alert('Please paste your transcript or content');
+                return;
+            }
+            
+            youtubeVideoId = extractVideoId(youtubeUrl);
+            
+            showLoading([
+                'Reading your content...',
+                'Identifying key topics...',
+                'Extracting timestamps...',
+                'Creating sections...',
+                'Generating key points...'
+            ]);
+            
+            try {
+                const prompt = buildPrompt(rawContent, audience, goal, !!youtubeVideoId);
+                const result = await callGemini(prompt);
+                sections = parseGeminiResponse(result);
+                
+                // Set default title from content if possible
+                if (sections.length > 0) {
+                    document.getElementById('brandName').value = sections[0].title || 'My Guide';
+                }
+                
+                hideLoading();
+                step = 3;
+                updateUI();
+                populateEditor();
+                
+            } catch (error) {
+                hideLoading();
+                console.error('Error:', error);
+                alert('Error processing content: ' + error.message + '\n\nPlease check your API key and try again.');
+            }
+        }
+        
+        function buildPrompt(content, audience, goal, hasVideo) {
+            return `You are an expert at turning messy content into clear, actionable guides.
+
+TASK: Analyse this transcript/content and create an iTabs guide structure.
+
+AUDIENCE: ${audience}
+GOAL: After reading, they should be able to: ${goal}
+HAS VIDEO: ${hasVideo ? 'Yes - extract timestamps for video linking' : 'No'}
+
+CONTENT TO ANALYSE:
+${content}
+
+INSTRUCTIONS:
+1. Identify 3-6 main topics/sections from the content
+2. For each section, extract:
+   - A clear title (2-5 words)
+   - A badge/category (e.g. "Overview", "How-To", "Key Point", "Warning", "Tip")
+   - The main content (2-4 sentences summarising that part)
+   - A key takeaway (1 sentence - the most important thing to remember)
+   - ${hasVideo ? 'A timestamp [HH:MM:SS] if mentioned in that section' : 'No timestamp needed'}
+
+3. Focus on ACTIONABLE information - what can they DO with this?
+4. Use simple, clear language
+5. Skip sponsor segments, intros, outros - focus on the valuable content
+
+RESPOND IN THIS EXACT JSON FORMAT:
+{
+  "suggestedTitle": "Guide title based on content",
+  "sections": [
+    {
+      "title": "Section Title",
+      "badge": "Category",
+      "content": "Main content for this section...",
+      "keyPoint": "The one thing to remember from this section",
+      "timestamp": "00:01:23"
+    }
+  ]
+}
+
+Only respond with valid JSON. No markdown, no explanation.`;
+        }
+        
+        async function callGemini(prompt) {
+            const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    contents: [{ parts: [{ text: prompt }] }],
+                    generationConfig: {
+                        temperature: 0.3,
+                        maxOutputTokens: 4096
+                    }
+                })
+            });
+            
+            if (!response.ok) {
+                const err = await response.json();
+                throw new Error(err.error?.message || 'API request failed');
+            }
+            
+            const data = await response.json();
+            return data.candidates[0].content.parts[0].text;
+        }
+        
+        function parseGeminiResponse(text) {
+            try {
+                // Clean up response - remove markdown code blocks if present
+                let cleaned = text.trim();
+                if (cleaned.startsWith('```')) {
+                    cleaned = cleaned.replace(/```json?\n?/g, '').replace(/```\n?/g, '');
+                }
+                
+                const data = JSON.parse(cleaned);
+                
+                // Set suggested title
+                if (data.suggestedTitle) {
+                    document.getElementById('brandName').value = data.suggestedTitle;
+                }
+                
+                return data.sections || [];
+            } catch (e) {
+                console.error('Parse error:', e, 'Response:', text);
+                // Fallback: create basic sections
+                return [{
+                    title: 'Overview',
+                    badge: 'Start',
+                    content: 'Content could not be automatically parsed. Please edit manually.',
+                    keyPoint: 'Edit this section with your key information.',
+                    timestamp: ''
+                }];
+            }
+        }
+        
+        // Editor
+        function populateEditor() {
+            const wrap = document.getElementById('sectionsWrap');
+            wrap.innerHTML = '';
+            sections.forEach((s, i) => addSectionUI(s, i));
+        }
+        
+        function addSectionUI(s, i) {
+            const wrap = document.getElementById('sectionsWrap');
+            const div = document.createElement('div');
+            div.className = 'edit-section';
+            
+            const timestampBadge = s.timestamp ? `<span class="timestamp-badge">${s.timestamp}</span>` : '';
+            
+            div.innerHTML = `
+                <div class="edit-section-head" onclick="toggleSec(this)">
+                    <h4>Section ${i + 1}: <span class="sec-title">${s.title || 'New'}</span>${timestampBadge}</h4>
+                    <span>▼</span>
+                </div>
+                <div class="edit-section-body">
+                    <div class="edit-field">
+                        <label>Title</label>
+                        <input type="text" class="sec-title-in" value="${escapeHtml(s.title || '')}" onchange="updateSecTitle(this)">
+                    </div>
+                    <div class="edit-field">
+                        <label>Badge</label>
+                        <input type="text" class="sec-badge-in" value="${escapeHtml(s.badge || '')}" placeholder="e.g. Overview, How-To, Key Point">
+                    </div>
+                    <div class="edit-field">
+                        <label>Timestamp (optional)</label>
+                        <input type="text" class="sec-timestamp-in" value="${escapeHtml(s.timestamp || '')}" placeholder="00:01:23">
+                    </div>
+                    <div class="edit-field">
+                        <label>Content</label>
+                        <textarea class="sec-content-in" rows="4">${escapeHtml(s.content || '')}</textarea>
+                    </div>
+                    <div class="edit-field">
+                        <label>Key Point</label>
+                        <input type="text" class="sec-key-in" value="${escapeHtml(s.keyPoint || '')}" placeholder="Main takeaway">
+                    </div>
+                    <button class="btn btn-secondary" onclick="removeSec(this)" style="margin-top:10px;padding:8px 16px;font-size:0.85rem;color:var(--error);">Remove Section</button>
+                </div>
+            `;
+            wrap.appendChild(div);
+        }
+        
+        function escapeHtml(str) {
+            return str.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+        }
+        
+        function addSection() {
+            addSectionUI({ title: 'New Section', badge: '', content: '', keyPoint: '', timestamp: '' }, document.querySelectorAll('.edit-section').length);
+        }
+        
+        function removeSec(btn) {
+            if (confirm('Remove this section?')) btn.closest('.edit-section').remove();
+        }
+        
+        function toggleSec(head) {
+            head.nextElementSibling.classList.toggle('show');
+        }
+        
+        function updateSecTitle(inp) {
+            inp.closest('.edit-section').querySelector('.sec-title').textContent = inp.value || 'New';
+        }
+        
+        // Color picker
+        document.getElementById('brandColor').addEventListener('input', function() {
+            document.getElementById('colorPrev').style.background = this.value;
+        });
+        
+        // Loading UI
+        function showLoading(steps) {
+            const stepsHtml = steps.map((s, i) => `<div class="loading-step" id="loadStep${i}">${s}</div>`).join('');
+            document.getElementById('loadingSteps').innerHTML = stepsHtml;
+            document.getElementById('loading').classList.add('show');
+            
+            // Animate through steps
+            let current = 0;
+            const interval = setInterval(() => {
+                if (current > 0) {
+                    document.getElementById('loadStep' + (current - 1)).classList.remove('active');
+                    document.getElementById('loadStep' + (current - 1)).classList.add('done');
+                    document.getElementById('loadStep' + (current - 1)).innerHTML = '✓ ' + steps[current - 1];
+                }
+                if (current < steps.length) {
+                    document.getElementById('loadStep' + current).classList.add('active');
+                    current++;
+                } else {
+                    clearInterval(interval);
+                }
+            }, 800);
+        }
+        
+        function hideLoading() {
+            document.getElementById('loading').classList.remove('show');
+        }
+        
+        // Download
+        function download() {
+            const name = document.getElementById('brandName').value || 'My Guide';
+            const client = document.getElementById('clientName').value;
+            const color = document.getElementById('brandColor').value;
+            const email = document.getElementById('contactEmail').value;
+            const embedVideo = document.getElementById('embedVideo').checked;
+            
+            const secs = [];
+            document.querySelectorAll('.edit-section').forEach((el, i) => {
+                secs.push({
+                    num: i + 1,
+                    title: el.querySelector('.sec-title-in').value || 'Section ' + (i + 1),
+                    badge: el.querySelector('.sec-badge-in').value || 'Info',
+                    timestamp: el.querySelector('.sec-timestamp-in').value || '',
+                    content: el.querySelector('.sec-content-in').value || '',
+                    key: el.querySelector('.sec-key-in').value || ''
+                });
+            });
+            
+            const html = buildHTML(name, client, color, email, secs, embedVideo ? youtubeVideoId : '');
+            
+            const blob = new Blob([html], { type: 'text/html' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = name.replace(/\s+/g, '-').toLowerCase() + '-itabs.html';
+            a.click();
+            URL.revokeObjectURL(url);
+        }
+        
+        function buildHTML(name, client, color, email, secs, videoId) {
+            // Build video embed if provided
+            let videoEmbed = '';
+            if (videoId) {
+                videoEmbed = `
+                <div class="video-container">
+                    <iframe id="ytPlayer" src="https://www.youtube.com/embed/${videoId}?enablejsapi=1" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+                </div>`;
+            }
+            
+            // Build sections
+            let secHTML = '';
+            secs.forEach(s => {
+                // Create timestamp link if we have both timestamp and video
+                let timestampLink = '';
+                if (s.timestamp && videoId) {
+                    const seconds = timestampToSeconds(s.timestamp);
+                    timestampLink = `<button class="timestamp-btn" onclick="event.stopPropagation(); jumpToTime(${seconds})">▶ ${s.timestamp}</button>`;
+                } else if (s.timestamp) {
+                    timestampLink = `<span class="timestamp-badge">${s.timestamp}</span>`;
+                }
+                
+                secHTML += `
+                <div class="itab-section">
+                    <div class="itab-header" onclick="toggle(this)">
+                        <div class="itab-title">
+                            <span class="itab-num">${s.num}</span>
+                            <span class="itab-name">${s.title}</span>
+                            <span class="itab-badge">${s.badge}</span>
+                            ${timestampLink}
+                        </div>
+                        <button class="i-btn">i</button>
+                    </div>
+                    <div class="itab-content">
+                        <p>${s.content.replace(/\n/g, '<br>')}</p>
+                        ${s.key ? `<div class="key-point"><div class="kp-label">💡 Key Point</div><p>${s.key}</p></div>` : ''}
+                    </div>
+                </div>`;
+            });
+            
+            return `<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>${name}</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --c: ${color};
+            --bg: #0f172a;
+            --card: #1e293b;
+            --txt: #f1f5f9;
+            --txt2: #94a3b8;
+            --bdr: #334155;
+        }
+        
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        
+        body {
+            font-family: 'Inter', sans-serif;
+            background: var(--bg);
+            color: var(--txt);
+            min-height: 100vh;
+            padding: 20px;
+            line-height: 1.6;
+        }
+        
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        
+        header {
+            text-align: center;
+            padding: 40px 20px;
+            border-bottom: 1px solid var(--bdr);
+            margin-bottom: 30px;
+        }
+        
+        .brand {
+            font-size: 1.2rem;
+            font-weight: 700;
+            color: var(--c);
+            margin-bottom: 15px;
+        }
+        
+        h1 {
+            font-size: 1.8rem;
+            font-weight: 700;
+            margin-bottom: 10px;
+        }
+        
+        .sub {
+            color: var(--txt2);
+        }
+        
+        .badge {
+            display: inline-block;
+            background: var(--card);
+            border: 1px solid var(--c);
+            color: var(--c);
+            padding: 6px 16px;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            margin-top: 15px;
+        }
+        
+        .video-container {
+            position: relative;
+            padding-bottom: 56.25%;
+            height: 0;
+            overflow: hidden;
+            border-radius: 12px;
+            margin-bottom: 30px;
+            background: var(--card);
+        }
+        
+        .video-container iframe {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+        }
+        
+        .itab-section {
+            background: var(--card);
+            border-radius: 12px;
+            margin-bottom: 16px;
+            border: 1px solid var(--bdr);
+            overflow: hidden;
+        }
+        
+        .itab-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 20px;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+        
+        .itab-header:hover {
+            background: #334155;
+        }
+        
+        .itab-title {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            flex-wrap: wrap;
+        }
+        
+        .itab-num {
+            width: 36px;
+            height: 36px;
+            background: var(--c);
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 600;
+            color: #fff;
+            flex-shrink: 0;
+        }
+        
+        .itab-name {
+            font-size: 1.1rem;
+            font-weight: 600;
+        }
+        
+        .itab-badge {
+            font-size: 0.7rem;
+            padding: 4px 10px;
+            border-radius: 20px;
+            background: #334155;
+            color: var(--txt2);
+            text-transform: uppercase;
+        }
+        
+        .timestamp-btn {
+            font-size: 0.75rem;
+            padding: 4px 12px;
+            border-radius: 4px;
+            background: rgba(245, 158, 11, 0.2);
+            color: var(--c);
+            font-family: monospace;
+            transition: all 0.2s;
+            border: 1px solid transparent;
+            cursor: pointer;
+        }
+        
+        .timestamp-btn:hover {
+            background: rgba(245, 158, 11, 0.4);
+            border-color: var(--c);
+        }
+        
+        .timestamp-badge {
+            font-size: 0.75rem;
+            padding: 4px 10px;
+            border-radius: 4px;
+            background: #334155;
+            color: var(--txt2);
+            font-family: monospace;
+        }
+        
+        .i-btn {
+            width: 32px;
+            height: 32px;
+            background: var(--c);
+            border: none;
+            border-radius: 8px;
+            color: #fff;
+            font-weight: 700;
+            cursor: pointer;
+            font-family: serif;
+            font-style: italic;
+            flex-shrink: 0;
+            transition: background 0.2s;
+        }
+        
+        .i-btn.active {
+            background: #10b981;
+        }
+        
+        .itab-content {
+            display: none;
+            padding: 20px;
+            border-top: 1px solid var(--bdr);
+        }
+        
+        .itab-content.show {
+            display: block;
+        }
+        
+        .itab-content p {
+            color: var(--txt2);
+            margin-bottom: 15px;
+        }
+        
+        .key-point {
+            background: var(--bg);
+            border-left: 4px solid var(--c);
+            padding: 15px 20px;
+            margin-top: 15px;
+            border-radius: 0 8px 8px 0;
+        }
+        
+        .kp-label {
+            color: var(--c);
+            font-weight: 600;
+            font-size: 0.85rem;
+            margin-bottom: 5px;
+        }
+        
+        .key-point p {
+            color: var(--txt);
+            margin: 0;
+        }
+        
+        .support {
+            background: var(--card);
+            border-radius: 12px;
+            padding: 25px;
+            text-align: center;
+            margin-top: 30px;
+        }
+        
+        .support h3 {
+            color: var(--c);
+            margin-bottom: 10px;
+        }
+        
+        .support a {
+            display: inline-block;
+            background: var(--c);
+            color: #fff;
+            padding: 12px 30px;
+            border-radius: 8px;
+            text-decoration: none;
+            font-weight: 600;
+            margin-top: 15px;
+        }
+        
+        footer {
+            text-align: center;
+            padding: 30px;
+            border-top: 1px solid var(--bdr);
+            margin-top: 30px;
+            color: var(--txt2);
+            font-size: 0.85rem;
+        }
+        
+        footer a {
+            color: var(--c);
+            text-decoration: none;
+        }
+        
+        @media (max-width: 600px) {
+            .itab-title {
+                gap: 10px;
+            }
+            .itab-name {
+                font-size: 1rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <div class="brand">${name}</div>
+            <h1>Your Guide</h1>
+            <p class="sub">Tap any section to learn more</p>
+            ${client ? `<span class="badge">Prepared for: ${client}</span>` : ''}
+        </header>
+        
+        ${videoEmbed}
+        
+        ${secHTML}
+        
+        ${email ? `
+        <div class="support">
+            <h3>Need Help?</h3>
+            <p style="color: var(--txt2);">Questions about this guide?</p>
+            <a href="mailto:${email}">Get in Touch →</a>
+        </div>` : ''}
+        
+        <footer>
+            Created with <a href="https://itabs.ai">iTabs</a> • Tap to learn, scroll to act
+        </footer>
+    </div>
+    
+    <script>
+        function toggle(h) {
+            h.nextElementSibling.classList.toggle('show');
+            h.querySelector('.i-btn').classList.toggle('active');
+        }
+        
+        function jumpToTime(seconds) {
+            var iframe = document.getElementById('ytPlayer');
+            if (iframe) {
+                iframe.src = iframe.src.split('?')[0] + '?enablejsapi=1&start=' + seconds + '&autoplay=1';
+                window.scrollTo({top: 0, behavior: 'smooth'});
+            }
+        }
+        
+        // Auto-open first section
+        document.querySelector('.itab-header')?.click();
+    <\/script>
+</body>
+</html>`;
+        }
+        
+        function timestampToSeconds(ts) {
+            if (!ts) return 0;
+            const parts = ts.replace(/[\[\]]/g, '').split(':').map(Number);
+            if (parts.length === 3) {
+                return parts[0] * 3600 + parts[1] * 60 + parts[2];
+            } else if (parts.length === 2) {
+                return parts[0] * 60 + parts[1];
+            }
+            return 0;
+        }
+    </script>
+</body>
+</html>
