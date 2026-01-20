@@ -1,0 +1,999 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>iTabs Generator v8</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="ai-assistant.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <div class="logo"><span>i</span>Tabs</div>
+            <p class="tagline">People learn easier and act</p>
+        </header>
+        
+        <div class="steps-indicator">
+            <div class="step-dot active" id="dot1">1</div>
+            <div class="step-line" id="line1"></div>
+            <div class="step-dot" id="dot2">2</div>
+            <div class="step-line" id="line2"></div>
+            <div class="step-dot" id="dot3">3</div>
+        </div>
+        
+        <!-- Step 1: API Key -->
+        <div class="section active" id="step1">
+            <h2 class="section-title">Setup</h2>
+            <p class="section-desc">One-time setup. Your key stays in your browser.</p>
+            
+            <div class="card">
+                <div class="card-title">🔑 Gemini API Key</div>
+                
+                <div class="api-key-wrap">
+                    <input type="password" id="apiKey" placeholder="Paste your API key">
+                    <button class="api-key-toggle" onclick="toggleKey()">👁️</button>
+                </div>
+                <p class="input-help">
+                    Free from Google → <a href="https://aistudio.google.com/app/apikey" target="_blank">Get your key</a>
+                </p>
+                
+                <div class="btn-row">
+                    <button class="btn btn-primary" onclick="saveKeyAndContinue()">Save & Continue →</button>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Step 2: Content Input -->
+        <div class="section" id="step2">
+            <h2 class="section-title">Your Content</h2>
+            <p class="section-desc">Paste your source. AI will organise it into an iTabs guide.</p>
+            
+            <div class="card">
+                <div class="card-title">🎬 YouTube Video (optional)</div>
+                
+                <div class="input-with-clear">
+                    <input type="url" id="youtubeUrl" placeholder="https://youtube.com/watch?v=..." value="https://www.youtube.com/watch?v=8_wzjlWBcM4">
+                    <button class="clear-btn" onclick="clearField('youtubeUrl')" title="Clear">×</button>
+                </div>
+                <p class="input-help">Paste the video URL to embed it in your guide</p>
+                
+                <button class="btn btn-secondary btn-small" onclick="getTranscript()" style="margin-top: 10px;">📄 Get Transcript</button>
+                
+                <label class="checkbox-row">
+                    <input type="checkbox" id="embedVideo" checked>
+                    <span>Embed video at top of guide</span>
+                </label>
+            </div>
+            
+            <div class="card">
+                <div class="card-title">📝 Transcript / Content</div>
+                
+                <div class="textarea-with-clear">
+                    <textarea id="rawContent" placeholder="Paste your transcript here...">[00:00:00] Welcome to this guide on getting started.
+[00:00:15] The first thing you need to know is the basics.
+[00:01:30] Here's the key concept that changes everything.
+[00:03:45] Now let's walk through the steps.
+[00:05:00] Finally, here's what to do next.</textarea>
+                    <button class="clear-btn textarea-clear" onclick="clearField('rawContent')" title="Clear">×</button>
+                </div>
+                
+                <p class="input-help">Tip: Timestamps like [00:01:23] will link to video moments</p>
+            </div>
+            
+            <div class="card">
+                <div class="card-title">🎯 Quick Context</div>
+                
+                <div class="edit-field">
+                    <label>Who is this guide for?</label>
+                    <input type="text" id="audience" placeholder="e.g. Training clients, Students, My own reference" value="People new to this topic">
+                </div>
+                
+                <div class="edit-field">
+                    <label>What should they be able to DO after reading?</label>
+                    <input type="text" id="goal" placeholder="e.g. Set up Claude Code, Pass their RSA exam" value="Understand the basics and take action">
+                </div>
+            </div>
+            
+            <div class="btn-row">
+                <button class="btn btn-secondary" onclick="goBack()">← Back</button>
+                <button class="btn btn-primary" onclick="processContent()">Create iTabs →</button>
+            </div>
+        </div>
+        
+        <!-- Step 3: Editor & Download -->
+        <div class="section" id="step3">
+            <h2 class="section-title">Edit & Download</h2>
+            <p class="section-desc">Review, tweak, then download your iTabs guide.</p>
+            
+            <div id="errorMsg"></div>
+            
+            <div class="card">
+                <div class="card-title">🏷️ Branding</div>
+                
+                <div class="edit-field">
+                    <label>Guide Title</label>
+                    <input type="text" id="brandName" placeholder="My Guide">
+                </div>
+                
+                <div class="edit-field">
+                    <label>Prepared For (optional)</label>
+                    <input type="text" id="clientName" placeholder="Client or company name">
+                </div>
+                
+                <div class="edit-field">
+                    <label>Brand Color</label>
+                    <div class="color-row">
+                        <input type="color" class="color-picker" id="brandColor" value="#f59e0b">
+                        <div class="color-preview" id="colorPrev" style="background:#f59e0b;"></div>
+                    </div>
+                </div>
+                
+                <div class="edit-field">
+                    <label>Contact Email (optional)</label>
+                    <input type="email" id="contactEmail" placeholder="hello@example.com">
+                </div>
+            </div>
+            
+            <div id="sectionsWrap"></div>
+            
+            <div class="section-actions">
+                <button class="btn btn-secondary btn-small" onclick="expandAll()">Expand All</button>
+                <button class="btn btn-secondary btn-small" onclick="collapseAll()">Collapse All</button>
+                <button class="btn btn-secondary btn-small" onclick="addSection()">+ Add Section</button>
+            </div>
+            
+            <div class="btn-row">
+                <button class="btn btn-secondary" onclick="goBack()">← Back</button>
+                <button class="btn btn-primary" onclick="showPreview()">👁️ Preview</button>
+                <button class="btn btn-success" onclick="download()">⬇️ Download</button>
+            </div>
+        </div>
+        
+        <footer>
+            Built by <a href="https://itabs.ai">iTabs</a> • People learn easier and act
+        </footer>
+    </div>
+    
+    <!-- Preview Modal -->
+    <div class="preview-overlay" id="previewOverlay" onclick="closePreview(event)">
+        <div class="preview-modal">
+            <div class="preview-header">
+                <h3>Preview</h3>
+                <button class="preview-close" onclick="closePreview()">&times;</button>
+            </div>
+            <iframe id="previewFrame" class="preview-frame"></iframe>
+        </div>
+    </div>
+    
+    <div class="loading" id="loading">
+        <div class="spinner"></div>
+        <div class="loading-text" id="loadingTxt">Processing your content...</div>
+        <div class="loading-steps" id="loadingSteps"></div>
+    </div>
+    
+    <script>
+        // State
+        let step = 1;
+        let apiKey = '';
+        let sections = [];
+        let youtubeVideoId = '';
+        
+        // Check for saved API key on load
+        window.onload = function() {
+            const savedKey = localStorage.getItem('itabs_gemini_key');
+            if (savedKey) {
+                apiKey = savedKey;
+                document.getElementById('apiKey').value = savedKey;
+            }
+        };
+        
+        // Navigation
+        function goToStep(n) {
+            step = n;
+            updateUI();
+        }
+        
+        function goBack() {
+            step--;
+            updateUI();
+        }
+        
+        function updateUI() {
+            document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+            document.getElementById('step' + step).classList.add('active');
+            
+            for (let i = 1; i <= 3; i++) {
+                const dot = document.getElementById('dot' + i);
+                const line = document.getElementById('line' + (i-1));
+                
+                if (i < step) {
+                    dot.className = 'step-dot completed';
+                    dot.textContent = '✓';
+                    if (line) line.classList.add('completed');
+                } else if (i === step) {
+                    dot.className = 'step-dot active';
+                    dot.textContent = i;
+                } else {
+                    dot.className = 'step-dot';
+                    dot.textContent = i;
+                }
+            }
+        }
+        
+        // API Key
+        function toggleKey() {
+            const inp = document.getElementById('apiKey');
+            inp.type = inp.type === 'password' ? 'text' : 'password';
+        }
+        
+        // Clear field
+        function clearField(fieldId) {
+            document.getElementById(fieldId).value = '';
+            document.getElementById(fieldId).focus();
+        }
+        
+        // Get transcript from YouTube
+        function getTranscript() {
+            const url = document.getElementById('youtubeUrl').value.trim();
+            const videoId = extractVideoId(url);
+            
+            if (!videoId) {
+                alert('Please enter a YouTube URL first');
+                return;
+            }
+            
+            window.open('https://youtubetotranscript.com/transcript?v=' + videoId, '_blank');
+        }
+        
+        // Expand/Collapse all sections
+        function expandAll() {
+            document.querySelectorAll('.edit-section-body').forEach(body => {
+                body.classList.add('show');
+            });
+        }
+        
+        function collapseAll() {
+            document.querySelectorAll('.edit-section-body').forEach(body => {
+                body.classList.remove('show');
+            });
+        }
+        
+        function saveKeyAndContinue() {
+            apiKey = document.getElementById('apiKey').value.trim();
+            if (!apiKey) {
+                alert('Please enter your Gemini API key');
+                return;
+            }
+            localStorage.setItem('itabs_gemini_key', apiKey);
+            step = 2;
+            updateUI();
+        }
+        
+        // Extract YouTube video ID
+        function extractVideoId(url) {
+            if (!url) return '';
+            const patterns = [
+                /(?:youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/embed\/)([^&\s?]+)/,
+                /^([a-zA-Z0-9_-]{11})$/
+            ];
+            for (const pattern of patterns) {
+                const match = url.match(pattern);
+                if (match) return match[1];
+            }
+            return '';
+        }
+        
+        // Process content with Gemini
+        async function processContent() {
+            const rawContent = document.getElementById('rawContent').value.trim();
+            const youtubeUrl = document.getElementById('youtubeUrl').value.trim();
+            const audience = document.getElementById('audience').value.trim() || 'General learners';
+            const goal = document.getElementById('goal').value.trim() || 'Understand and apply the content';
+            
+            if (!rawContent) {
+                alert('Please paste your transcript or content');
+                return;
+            }
+            
+            youtubeVideoId = extractVideoId(youtubeUrl);
+            
+            showLoading([
+                'Reading your content...',
+                'Identifying key topics...',
+                'Extracting timestamps...',
+                'Creating sections...',
+                'Generating key points...'
+            ]);
+            
+            try {
+                const prompt = buildPrompt(rawContent, audience, goal, !!youtubeVideoId);
+                const result = await callGemini(prompt);
+                sections = parseGeminiResponse(result);
+                
+                // Set default title from content if possible
+                if (sections.length > 0) {
+                    document.getElementById('brandName').value = sections[0].title || 'My Guide';
+                }
+                
+                hideLoading();
+                step = 3;
+                updateUI();
+                populateEditor();
+                
+            } catch (error) {
+                hideLoading();
+                console.error('Error:', error);
+                alert('Error processing content: ' + error.message + '\n\nPlease check your API key and try again.');
+            }
+        }
+        
+        function buildPrompt(content, audience, goal, hasVideo) {
+            return `You are an expert instructional designer. Your job is to turn content into TEACHABLE guides that help people learn and take action.
+
+CORE PRINCIPLE: Someone should be able to open this guide in 6 months and take action within 30 seconds.
+
+AUDIENCE: ${audience}
+LEARNING GOAL: After reading, they should be able to: ${goal}
+HAS VIDEO: ${hasVideo ? 'Yes - extract timestamps [HH:MM:SS] for each section' : 'No'}
+
+CONTENT TO ANALYSE:
+${content}
+
+CREATE A TEACHABLE GUIDE WITH 4-6 SECTIONS. For each section include:
+
+1. **title**: Clear, specific title (2-6 words) that tells them what they'll learn
+2. **badge**: One of: "Concept" | "How-To" | "Why It Matters" | "Example" | "Warning" | "Action Step" | "Key Fact"
+3. **content**: TEACH the concept in 3-5 sentences. Include:
+   - What it IS (simple explanation)
+   - Why it MATTERS (relevance to them)
+   - HOW to use it or what to do (actionable)
+   - A specific example, number, or detail from the source
+4. **keyPoint**: The ONE thing to remember - written as a memorable takeaway they can recall later
+5. **timestamp**: ${hasVideo ? 'The [HH:MM:SS] timestamp where this topic starts in the video' : 'Leave empty'}
+
+RULES:
+- Write for someone who has NEVER seen this content before
+- Use simple, everyday language (no jargon unless explained)
+- Every section must answer "So what? Why should I care?"
+- Include specific facts, numbers, or examples - not vague summaries
+- Skip intros, sponsors, outros - only valuable teaching content
+- Make key points MEMORABLE - something they'd tell a friend
+
+RESPOND IN THIS EXACT JSON FORMAT:
+{
+  "suggestedTitle": "Guide title that promises what they'll learn",
+  "sections": [
+    {
+      "title": "Section Title",
+      "badge": "Category",
+      "content": "Detailed teachable content here...",
+      "keyPoint": "Memorable one-liner takeaway",
+      "timestamp": "00:01:23"
+    }
+  ]
+}
+
+Only respond with valid JSON. No markdown, no explanation.`;
+        }
+        
+        async function callGemini(prompt) {
+            const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    contents: [{ parts: [{ text: prompt }] }],
+                    generationConfig: {
+                        temperature: 0.3,
+                        maxOutputTokens: 4096
+                    }
+                })
+            });
+            
+            if (!response.ok) {
+                const err = await response.json();
+                throw new Error(err.error?.message || 'API request failed');
+            }
+            
+            const data = await response.json();
+            return data.candidates[0].content.parts[0].text;
+        }
+        
+        function parseGeminiResponse(text) {
+            try {
+                // Clean up response - remove markdown code blocks if present
+                let cleaned = text.trim();
+                if (cleaned.startsWith('```')) {
+                    cleaned = cleaned.replace(/```json?\n?/g, '').replace(/```\n?/g, '');
+                }
+                
+                const data = JSON.parse(cleaned);
+                
+                // Set suggested title
+                if (data.suggestedTitle) {
+                    document.getElementById('brandName').value = data.suggestedTitle;
+                }
+                
+                return data.sections || [];
+            } catch (e) {
+                console.error('Parse error:', e, 'Response:', text);
+                // Fallback: create basic sections
+                return [{
+                    title: 'Overview',
+                    badge: 'Start',
+                    content: 'Content could not be automatically parsed. Please edit manually.',
+                    keyPoint: 'Edit this section with your key information.',
+                    timestamp: ''
+                }];
+            }
+        }
+        
+        // Editor
+        function populateEditor() {
+            const wrap = document.getElementById('sectionsWrap');
+            wrap.innerHTML = '';
+            sections.forEach((s, i) => addSectionUI(s, i, true));
+        }
+        
+        function addSectionUI(s, i, openByDefault = false) {
+            const wrap = document.getElementById('sectionsWrap');
+            const div = document.createElement('div');
+            div.className = 'edit-section';
+            
+            const timestampBadge = s.timestamp ? `<span class="timestamp-badge">${s.timestamp}</span>` : '';
+            
+            div.innerHTML = `
+                <div class="edit-section-head" onclick="toggleSec(this)">
+                    <h4>Section ${i + 1}: <span class="sec-title">${s.title || 'New'}</span>${timestampBadge}</h4>
+                    <span>▼</span>
+                </div>
+                <div class="edit-section-body ${openByDefault ? 'show' : ''}">
+                    <div class="edit-field">
+                        <label>Title</label>
+                        <input type="text" class="sec-title-in" value="${escapeHtml(s.title || '')}" onchange="updateSecTitle(this)">
+                    </div>
+                    <div class="edit-field">
+                        <label>Badge</label>
+                        <input type="text" class="sec-badge-in" value="${escapeHtml(s.badge || '')}" placeholder="e.g. Overview, How-To, Key Point">
+                    </div>
+                    <div class="edit-field">
+                        <label>Timestamp (optional)</label>
+                        <input type="text" class="sec-timestamp-in" value="${escapeHtml(s.timestamp || '')}" placeholder="00:01:23">
+                    </div>
+                    <div class="edit-field">
+                        <label>Content</label>
+                        <textarea class="sec-content-in" rows="6">${escapeHtml(s.content || '')}</textarea>
+                    </div>
+                    <div class="edit-field">
+                        <label>Key Point</label>
+                        <input type="text" class="sec-key-in" value="${escapeHtml(s.keyPoint || '')}" placeholder="Main takeaway">
+                    </div>
+                    <button class="btn btn-secondary" onclick="removeSec(this)" style="margin-top:10px;padding:8px 16px;font-size:0.85rem;color:var(--error);">Remove Section</button>
+                </div>
+            `;
+            wrap.appendChild(div);
+        }
+        
+        function escapeHtml(str) {
+            return str.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+        }
+        
+        function addSection() {
+            addSectionUI({ title: 'New Section', badge: '', content: '', keyPoint: '', timestamp: '' }, document.querySelectorAll('.edit-section').length, true);
+        }
+        
+        function removeSec(btn) {
+            if (confirm('Remove this section?')) btn.closest('.edit-section').remove();
+        }
+        
+        function toggleSec(head) {
+            head.nextElementSibling.classList.toggle('show');
+        }
+        
+        function updateSecTitle(inp) {
+            inp.closest('.edit-section').querySelector('.sec-title').textContent = inp.value || 'New';
+        }
+        
+        // Color picker
+        document.getElementById('brandColor').addEventListener('input', function() {
+            document.getElementById('colorPrev').style.background = this.value;
+        });
+        
+        // Loading UI
+        function showLoading(steps) {
+            const stepsHtml = steps.map((s, i) => `<div class="loading-step" id="loadStep${i}">${s}</div>`).join('');
+            document.getElementById('loadingSteps').innerHTML = stepsHtml;
+            document.getElementById('loading').classList.add('show');
+            
+            // Animate through steps
+            let current = 0;
+            const interval = setInterval(() => {
+                if (current > 0) {
+                    document.getElementById('loadStep' + (current - 1)).classList.remove('active');
+                    document.getElementById('loadStep' + (current - 1)).classList.add('done');
+                    document.getElementById('loadStep' + (current - 1)).innerHTML = '✓ ' + steps[current - 1];
+                }
+                if (current < steps.length) {
+                    document.getElementById('loadStep' + current).classList.add('active');
+                    current++;
+                } else {
+                    clearInterval(interval);
+                }
+            }, 800);
+        }
+        
+        function hideLoading() {
+            document.getElementById('loading').classList.remove('show');
+        }
+        
+        // Preview
+        function showPreview() {
+            const name = document.getElementById('brandName').value || 'My Guide';
+            const client = document.getElementById('clientName').value;
+            const color = document.getElementById('brandColor').value;
+            const email = document.getElementById('contactEmail').value;
+            const embedVideo = document.getElementById('embedVideo').checked;
+            
+            const secs = [];
+            document.querySelectorAll('.edit-section').forEach((el, i) => {
+                secs.push({
+                    num: i + 1,
+                    title: el.querySelector('.sec-title-in').value || 'Section ' + (i + 1),
+                    badge: el.querySelector('.sec-badge-in').value || 'Info',
+                    timestamp: el.querySelector('.sec-timestamp-in').value || '',
+                    content: el.querySelector('.sec-content-in').value || '',
+                    key: el.querySelector('.sec-key-in').value || ''
+                });
+            });
+            
+            const html = buildHTML(name, client, color, email, secs, embedVideo ? youtubeVideoId : '');
+            
+            const iframe = document.getElementById('previewFrame');
+            const blob = new Blob([html], { type: 'text/html' });
+            const url = URL.createObjectURL(blob);
+            iframe.src = url;
+            
+            document.getElementById('previewOverlay').classList.add('show');
+            document.body.style.overflow = 'hidden';
+        }
+        
+        function closePreview(event) {
+            if (!event || event.target === document.getElementById('previewOverlay')) {
+                document.getElementById('previewOverlay').classList.remove('show');
+                document.body.style.overflow = '';
+            }
+        }
+        
+        // Close preview with Escape key
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape') closePreview();
+        });
+        
+        // Download
+        function download() {
+            const name = document.getElementById('brandName').value || 'My Guide';
+            const client = document.getElementById('clientName').value;
+            const color = document.getElementById('brandColor').value;
+            const email = document.getElementById('contactEmail').value;
+            const embedVideo = document.getElementById('embedVideo').checked;
+            
+            const secs = [];
+            document.querySelectorAll('.edit-section').forEach((el, i) => {
+                secs.push({
+                    num: i + 1,
+                    title: el.querySelector('.sec-title-in').value || 'Section ' + (i + 1),
+                    badge: el.querySelector('.sec-badge-in').value || 'Info',
+                    timestamp: el.querySelector('.sec-timestamp-in').value || '',
+                    content: el.querySelector('.sec-content-in').value || '',
+                    key: el.querySelector('.sec-key-in').value || ''
+                });
+            });
+            
+            const html = buildHTML(name, client, color, email, secs, embedVideo ? youtubeVideoId : '');
+            
+            const blob = new Blob([html], { type: 'text/html' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = name.replace(/\s+/g, '-').toLowerCase() + '-itabs.html';
+            a.click();
+            URL.revokeObjectURL(url);
+        }
+        
+        function buildHTML(name, client, color, email, secs, videoId) {
+            // Build video embed if provided
+            let videoEmbed = '';
+            if (videoId) {
+                videoEmbed = `
+                <div class="video-container">
+                    <iframe id="ytPlayer" src="https://www.youtube-nocookie.com/embed/${videoId}?rel=0&modestbranding=1" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>
+                </div>`;
+            }
+            
+            // Build sections
+            let secHTML = '';
+            secs.forEach(s => {
+                // Create timestamp link if we have both timestamp and video
+                let timestampLink = '';
+                if (s.timestamp && videoId) {
+                    const seconds = timestampToSeconds(s.timestamp);
+                    timestampLink = `<button class="timestamp-btn" onclick="event.stopPropagation(); jumpToTime(${seconds})">▶ ${s.timestamp}</button>`;
+                } else if (s.timestamp) {
+                    timestampLink = `<span class="timestamp-badge">${s.timestamp}</span>`;
+                }
+                
+                secHTML += `
+                <div class="itab-section">
+                    <div class="itab-header" onclick="toggle(this)">
+                        <div class="itab-title">
+                            <span class="itab-num">${s.num}</span>
+                            <span class="itab-name">${s.title}</span>
+                            <span class="itab-badge">${s.badge}</span>
+                            ${timestampLink}
+                        </div>
+                        <button class="i-btn">i</button>
+                    </div>
+                    <div class="itab-content">
+                        <p>${s.content.replace(/\n/g, '<br>')}</p>
+                        ${s.key ? `<div class="key-point"><div class="kp-label">💡 Key Point</div><p>${s.key}</p></div>` : ''}
+                    </div>
+                </div>`;
+            });
+            
+            // Build meta tags
+            const thumbnail = videoId ? `https://img.youtube.com/vi/${videoId}/maxresdefault.jpg` : '';
+            const description = secs.length > 0 ? secs[0].content.substring(0, 155) + '...' : 'Interactive guide created with iTabs';
+            
+            return `<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>${name}</title>
+    
+    <!-- Meta Description -->
+    <meta name="description" content="${description.replace(/"/g, '&quot;')}">
+    
+    <!-- Open Graph / Facebook -->
+    <meta property="og:type" content="website">
+    <meta property="og:title" content="${name}">
+    <meta property="og:description" content="${description.replace(/"/g, '&quot;')}">
+    ${thumbnail ? `<meta property="og:image" content="${thumbnail}">` : ''}
+    <meta property="og:site_name" content="iTabs">
+    
+    <!-- Twitter -->
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="${name}">
+    <meta name="twitter:description" content="${description.replace(/"/g, '&quot;')}">
+    ${thumbnail ? `<meta name="twitter:image" content="${thumbnail}">` : ''}
+    
+    <!-- Theme Color -->
+    <meta name="theme-color" content="${color}">
+    
+    <!-- Favicon -->
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>📚</text></svg>">
+    
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --c: ${color};
+            --bg: #0f172a;
+            --card: #1e293b;
+            --txt: #f1f5f9;
+            --txt2: #94a3b8;
+            --bdr: #334155;
+        }
+        
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        
+        body {
+            font-family: 'Inter', sans-serif;
+            background: var(--bg);
+            color: var(--txt);
+            min-height: 100vh;
+            padding: 20px;
+            line-height: 1.6;
+        }
+        
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        
+        header {
+            text-align: center;
+            padding: 40px 20px;
+            border-bottom: 1px solid var(--bdr);
+            margin-bottom: 30px;
+        }
+        
+        .brand {
+            font-size: 1.2rem;
+            font-weight: 700;
+            color: var(--c);
+            margin-bottom: 15px;
+        }
+        
+        h1 {
+            font-size: 1.8rem;
+            font-weight: 700;
+            margin-bottom: 10px;
+        }
+        
+        .sub {
+            color: var(--txt2);
+        }
+        
+        .badge {
+            display: inline-block;
+            background: var(--card);
+            border: 1px solid var(--c);
+            color: var(--c);
+            padding: 6px 16px;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            margin-top: 15px;
+        }
+        
+        .video-container {
+            position: relative;
+            padding-bottom: 56.25%;
+            height: 0;
+            overflow: hidden;
+            border-radius: 12px;
+            margin-bottom: 30px;
+            background: var(--card);
+        }
+        
+        .video-container iframe {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+        }
+        
+        .itab-section {
+            background: var(--card);
+            border-radius: 12px;
+            margin-bottom: 16px;
+            border: 1px solid var(--bdr);
+            overflow: hidden;
+        }
+        
+        .itab-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 20px;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+        
+        .itab-header:hover {
+            background: #334155;
+        }
+        
+        .itab-title {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            flex-wrap: wrap;
+        }
+        
+        .itab-num {
+            width: 36px;
+            height: 36px;
+            background: var(--c);
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 600;
+            color: #fff;
+            flex-shrink: 0;
+        }
+        
+        .itab-name {
+            font-size: 1.1rem;
+            font-weight: 600;
+        }
+        
+        .itab-badge {
+            font-size: 0.7rem;
+            padding: 4px 10px;
+            border-radius: 20px;
+            background: #334155;
+            color: var(--txt2);
+            text-transform: uppercase;
+        }
+        
+        .timestamp-btn {
+            font-size: 0.75rem;
+            padding: 4px 12px;
+            border-radius: 4px;
+            background: rgba(245, 158, 11, 0.2);
+            color: var(--c);
+            font-family: monospace;
+            transition: all 0.2s;
+            border: 1px solid transparent;
+            cursor: pointer;
+        }
+        
+        .timestamp-btn:hover {
+            background: rgba(245, 158, 11, 0.4);
+            border-color: var(--c);
+        }
+        
+        .timestamp-badge {
+            font-size: 0.75rem;
+            padding: 4px 10px;
+            border-radius: 4px;
+            background: #334155;
+            color: var(--txt2);
+            font-family: monospace;
+        }
+        
+        .i-btn {
+            width: 32px;
+            height: 32px;
+            background: var(--c);
+            border: none;
+            border-radius: 8px;
+            color: #fff;
+            font-weight: 700;
+            cursor: pointer;
+            font-family: serif;
+            font-style: italic;
+            flex-shrink: 0;
+            transition: background 0.2s;
+        }
+        
+        .i-btn.active {
+            background: #10b981;
+        }
+        
+        .itab-content {
+            display: none;
+            padding: 20px;
+            border-top: 1px solid var(--bdr);
+        }
+        
+        .itab-content.show {
+            display: block;
+        }
+        
+        .itab-content p {
+            color: var(--txt2);
+            margin-bottom: 15px;
+        }
+        
+        .key-point {
+            background: var(--bg);
+            border-left: 4px solid var(--c);
+            padding: 15px 20px;
+            margin-top: 15px;
+            border-radius: 0 8px 8px 0;
+        }
+        
+        .kp-label {
+            color: var(--c);
+            font-weight: 600;
+            font-size: 0.85rem;
+            margin-bottom: 5px;
+        }
+        
+        .key-point p {
+            color: var(--txt);
+            margin: 0;
+        }
+        
+        .support {
+            background: var(--card);
+            border-radius: 12px;
+            padding: 25px;
+            text-align: center;
+            margin-top: 30px;
+        }
+        
+        .support h3 {
+            color: var(--c);
+            margin-bottom: 10px;
+        }
+        
+        .support a {
+            display: inline-block;
+            background: var(--c);
+            color: #fff;
+            padding: 12px 30px;
+            border-radius: 8px;
+            text-decoration: none;
+            font-weight: 600;
+            margin-top: 15px;
+        }
+        
+        footer {
+            text-align: center;
+            padding: 30px;
+            border-top: 1px solid var(--bdr);
+            margin-top: 30px;
+            color: var(--txt2);
+            font-size: 0.85rem;
+        }
+        
+        footer a {
+            color: var(--c);
+            text-decoration: none;
+        }
+        
+        @media (max-width: 600px) {
+            .itab-title {
+                gap: 10px;
+            }
+            .itab-name {
+                font-size: 1rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <div class="brand">${name}</div>
+            <h1>Your Guide</h1>
+            <p class="sub">Tap any section to learn more</p>
+            ${client ? `<span class="badge">Prepared for: ${client}</span>` : ''}
+        </header>
+        
+        ${videoEmbed}
+        
+        ${secHTML}
+        
+        ${email ? `
+        <div class="support">
+            <h3>Need Help?</h3>
+            <p style="color: var(--txt2);">Questions about this guide?</p>
+            <a href="mailto:${email}">Get in Touch →</a>
+        </div>` : ''}
+        
+        <footer>
+            Created with <a href="https://itabs.ai">iTabs</a> • Tap to learn, scroll to act
+        </footer>
+    </div>
+    
+    <script>
+        function toggle(h) {
+            h.nextElementSibling.classList.toggle('show');
+            h.querySelector('.i-btn').classList.toggle('active');
+        }
+        
+        function jumpToTime(seconds) {
+            var iframe = document.getElementById('ytPlayer');
+            if (iframe) {
+                var baseUrl = iframe.src.split('?')[0];
+                iframe.src = baseUrl + '?rel=0&modestbranding=1&start=' + seconds + '&autoplay=1';
+                window.scrollTo({top: 0, behavior: 'smooth'});
+            }
+        }
+        
+        // Auto-open first section
+        document.querySelector('.itab-header')?.click();
+    <\/script>
+</body>
+</html>`;
+        }
+        
+        function timestampToSeconds(ts) {
+            if (!ts) return 0;
+            const parts = ts.replace(/[\[\]]/g, '').split(':').map(Number);
+            if (parts.length === 3) {
+                return parts[0] * 3600 + parts[1] * 60 + parts[2];
+            } else if (parts.length === 2) {
+                return parts[0] * 60 + parts[1];
+            }
+            return 0;
+        }
+    </script>
+    <script src="ai-assistant.js"></script>
+</body>
+</html>
